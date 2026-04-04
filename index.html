@@ -6,130 +6,75 @@
 <title>Memory Assist</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
   body {
-    background: #0a0a12;
-    color: #ddd;
-    font-family: 'Segoe UI', sans-serif;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 24px 16px;
-    gap: 24px;
-    min-height: 100vh;
+    background: #0a0a12; color: #ddd;
+    font-family: "Segoe UI", sans-serif;
+    display: flex; flex-direction: column;
+    align-items: center; padding: 28px 16px; gap: 22px; min-height: 100vh;
   }
-
-  h1 { font-size: 1.3rem; letter-spacing: 0.12em; color: #aab8ff; text-transform: uppercase; }
-
-  /* ── Sequence strip ── */
+  h1 { font-size: 1.25rem; letter-spacing: .14em; color: #aab8ff; text-transform: uppercase; }
   #strip { display: flex; gap: 10px; }
   .sslot {
-    width: 72px; height: 72px;
-    border-radius: 6px;
-    border: 2px solid #2a2a3a;
-    background: #0e0e1a;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    gap: 4px;
-    position: relative;
-    transition: border-color .25s, background .25s, box-shadow .25s;
+    width: 68px; height: 68px; border-radius: 6px;
+    border: 2px solid #2a2a3a; background: #0e0e1a;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 3px; position: relative; transition: border-color .25s, background .25s, box-shadow .25s;
   }
-  .sslot .snum {
-    position: absolute; top: 4px; left: 6px;
-    font-size: 0.65rem; color: #444;
-  }
-  .sslot img  { width: 38px; height: 38px; opacity: 0; transition: opacity .3s; }
-  .sslot .slbl { font-size: 0.6rem; text-transform: uppercase; letter-spacing: .05em; color: #555; opacity: 0; transition: opacity .3s; }
-  .sslot.filled { border-color: var(--c); background: color-mix(in srgb, var(--c) 12%, #0e0e1a); box-shadow: 0 0 14px color-mix(in srgb, var(--c) 28%, transparent); }
+  .sslot .snum { position: absolute; top: 3px; left: 6px; font-size: .6rem; color: #444; }
+  .sslot img   { width: 36px; height: 36px; opacity: 0; transition: opacity .3s; }
+  .sslot .slbl { font-size: .58rem; text-transform: uppercase; letter-spacing: .05em; color: #555; opacity: 0; transition: opacity .3s; }
+  .sslot.filled { border-color: var(--c); background: color-mix(in srgb,var(--c) 12%,#0e0e1a); box-shadow: 0 0 14px color-mix(in srgb,var(--c) 28%,transparent); }
   .sslot.filled img, .sslot.filled .slbl { opacity: 1; }
   .sslot.filled .slbl { color: var(--c); }
 
-  /* ── Boss diagram ── */
   #diag {
-    position: relative;
-    width: 300px; height: 300px;
-    background: #0d0d18;
-    border-radius: 50%;
-    border: 2px solid #2a2a4a;
-    box-shadow: 0 0 30px rgba(80,60,140,.35);
-    flex-shrink: 0;
+    position: relative; width: 260px; height: 260px;
+    background: #0d0d18; border-radius: 50%;
+    border: 2px solid #2a2a4a; box-shadow: 0 0 28px rgba(80,60,140,.35);
   }
-
+  #boss {
+    position: absolute; width: 40px; height: 40px;
+    left: 50%; top: 50%; transform: translate(-50%,-50%);
+    background: #c03030; border-radius: 50%; box-shadow: 0 0 12px rgba(200,50,50,.55);
+  }
+  #tank {
+    position: absolute; display: flex; flex-direction: column; align-items: center; gap: 1px;
+    transform: translate(-50%,-50%);
+  }
+  #tank img  { width: 20px; height: 20px; }
+  #tank span { font-size: .52rem; color: #80b8ff; }
   .dslot {
-    position: absolute;
-    width: 52px; height: 52px;
-    transform: translate(-50%, -50%);
-    border-radius: 6px;
-    border: 2px solid #2a2a3a;
-    background: #12121e;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
+    position: absolute; width: 46px; height: 46px;
+    transform: translate(-50%,-50%); border-radius: 5px;
+    border: 2px solid #2a2a3a; background: #12121e;
+    display: flex; align-items: center; justify-content: center;
     transition: border-color .25s, background .25s, box-shadow .25s;
   }
-  .dslot .dnum { position: absolute; top: 3px; left: 5px; font-size: 0.6rem; color: #555; }
-  .dslot img  { width: 32px; height: 32px; opacity: 0; transition: opacity .3s; }
-  .dslot.filled { border-color: var(--c); background: color-mix(in srgb, var(--c) 14%, #12121e); box-shadow: 0 0 12px color-mix(in srgb, var(--c) 30%, transparent); }
+  .dslot .dnum { position: absolute; top: 2px; left: 4px; font-size: .58rem; color: #555; }
+  .dslot img   { width: 28px; height: 28px; opacity: 0; transition: opacity .3s; }
+  .dslot.filled { border-color: var(--c); background: color-mix(in srgb,var(--c) 14%,#12121e); box-shadow: 0 0 10px color-mix(in srgb,var(--c) 30%,transparent); }
   .dslot.filled img { opacity: 1; }
 
-  /* Boss dot */
-  #boss {
-    position: absolute;
-    width: 44px; height: 44px;
-    left: 50%; top: 50%;
-    transform: translate(-50%, -50%);
-    background: #c03030;
-    border-radius: 50%;
-    box-shadow: 0 0 12px rgba(200,50,50,.6);
-  }
-
-  /* Tank marker */
-  #tank {
-    position: absolute;
-    display: flex; flex-direction: column; align-items: center; gap: 1px;
-    transform: translate(-50%, -50%);
-  }
-  #tank img { width: 22px; height: 22px; }
-  #tank span { font-size: 0.55rem; color: #80b8ff; letter-spacing: .04em; }
-
-  /* ── Shape buttons ── */
-  #buttons {
-    display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: center;
-  }
+  #buttons { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
   .sbtn {
-    width: 68px; height: 68px;
-    border-radius: 8px;
-    border: 2px solid var(--c);
-    background: color-mix(in srgb, var(--c) 10%, #0e0e1a);
-    cursor: pointer;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    gap: 4px;
+    width: 64px; height: 64px; border-radius: 8px; cursor: pointer;
+    border: 2px solid var(--c); background: color-mix(in srgb,var(--c) 10%,#0e0e1a);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
     transition: background .15s, box-shadow .15s, opacity .15s;
-    padding: 0;
   }
-  .sbtn:hover:not(:disabled) { background: color-mix(in srgb, var(--c) 24%, #0e0e1a); box-shadow: 0 0 12px color-mix(in srgb, var(--c) 40%, transparent); }
-  .sbtn:disabled { opacity: .32; cursor: default; }
-  .sbtn img  { width: 36px; height: 36px; pointer-events: none; }
-  .sbtn span { font-size: 0.6rem; text-transform: uppercase; letter-spacing: .05em; color: var(--c); pointer-events: none; }
-
+  .sbtn:hover:not(:disabled) { background: color-mix(in srgb,var(--c) 24%,#0e0e1a); box-shadow: 0 0 12px color-mix(in srgb,var(--c) 40%,transparent); }
+  .sbtn:disabled { opacity: .28; cursor: default; }
+  .sbtn img  { width: 32px; height: 32px; pointer-events: none; }
+  .sbtn span { font-size: .58rem; text-transform: uppercase; letter-spacing: .04em; color: var(--c); pointer-events: none; }
   #resetBtn {
-    height: 68px; padding: 0 20px;
-    border-radius: 8px;
-    border: 2px solid #554444;
-    background: #1a0f0f;
-    color: #ff7070;
-    font-size: 0.85rem;
-    letter-spacing: .06em;
-    text-transform: uppercase;
-    cursor: pointer;
+    height: 64px; padding: 0 18px; border-radius: 8px;
+    border: 2px solid #554; background: #1a0f0f; color: #ff7070;
+    font-size: .8rem; letter-spacing: .06em; text-transform: uppercase; cursor: pointer;
     transition: background .15s, border-color .15s;
   }
-  #resetBtn:hover { background: #2a1212; border-color: #ff4444; }
-
-  /* ── Status ── */
+  #resetBtn:hover { background: #2a1212; border-color: #f44; }
   #status {
-    font-size: 0.75rem; padding: 3px 12px;
-    border-radius: 20px;
+    font-size: .72rem; padding: 3px 12px; border-radius: 20px;
     background: #111120; border: 1px solid #222236; color: #555;
     transition: color .3s, border-color .3s;
   }
@@ -138,10 +83,7 @@
 </style>
 </head>
 <body>
-
 <h1>Memory Assist</h1>
-
-<!-- Sequence strip -->
 <div id="strip">
   <div class="sslot" id="ss1"><span class="snum">1</span><img src="" alt=""><span class="slbl"></span></div>
   <div class="sslot" id="ss2"><span class="snum">2</span><img src="" alt=""><span class="slbl"></span></div>
@@ -149,298 +91,84 @@
   <div class="sslot" id="ss4"><span class="snum">4</span><img src="" alt=""><span class="slbl"></span></div>
   <div class="sslot" id="ss5"><span class="snum">5</span><img src="" alt=""><span class="slbl"></span></div>
 </div>
-
-<!-- Boss diagram -->
 <div id="diag">
   <div id="boss"></div>
-  <div id="tank">
-    <!-- positioned by JS -->
-    <img src="https://wow.zamimg.com/images/wow/icons/small/inv_shield_06.jpg" alt="tank"
-         onerror="this.style.display='none'">
-    <span>Tank</span>
-  </div>
-  <!-- 5 clock-position slots, positioned by JS -->
+  <div id="tank"><img src="https://wow.zamimg.com/images/wow/icons/small/inv_shield_06.jpg" alt="" onerror="this.style.display='none'"><span>Tank</span></div>
   <div class="dslot" id="ds1"><span class="dnum">1</span><img src="" alt=""></div>
   <div class="dslot" id="ds2"><span class="dnum">2</span><img src="" alt=""></div>
   <div class="dslot" id="ds3"><span class="dnum">3</span><img src="" alt=""></div>
   <div class="dslot" id="ds4"><span class="dnum">4</span><img src="" alt=""></div>
   <div class="dslot" id="ds5"><span class="dnum">5</span><img src="" alt=""></div>
 </div>
-
-<!-- Shape buttons -->
-<div id="buttons">
-</div>
-
-<div id="status">Connecting…</div>
-
+<div id="buttons"></div>
+<div id="status">Connecting...</div>
 <script>
 const SHAPES = [
-  { name: 'TRIANGLE', color: '#66ff88', img: '../Triangle.png' },
-  { name: 'DIAMOND',  color: '#ffd933', img: '../diamond.png'  },
-  { name: 'T',        color: '#cc80ff', img: '../T.png'        },
-  { name: 'CIRCLE',   color: '#66ccff', img: '../circle.png'   },
-  { name: 'X',        color: '#ff4d4d', img: '../x.png'        },
+  { name:"TRIANGLE", color:"#66ff88", img:"./Triangle.png" },
+  { name:"DIAMOND",  color:"#ffd933", img:"./diamond.png"  },
+  { name:"T",        color:"#cc80ff", img:"./T.png"        },
+  { name:"CIRCLE",   color:"#66ccff", img:"./circle.png"   },
+  { name:"X",        color:"#ff4d4d", img:"./x.png"        },
 ];
-const SHAPE_MAP = Object.fromEntries(SHAPES.map(s => [s.name, s]));
-
-// Boss diagram: clock positions (WoW coords → CSS pixels in 300x300, center=150)
-// WoW Y is up-positive, CSS Y is down-positive → negate Y
-const POSITIONS = [
-  { x: 150 + 50*1.5, y: 150 - (-47)*1.5 }, // slot 1
-  { x: 150 + (-19)*1.5, y: 150 - (-59)*1.5 }, // slot 2
-  { x: 150 + (-62)*1.5, y: 150 - 0 },         // slot 3
-  { x: 150 + (-19)*1.5, y: 150 - 59*1.5 },    // slot 4
-  { x: 150 + 47*1.5,  y: 150 - 50*1.5 },      // slot 5
-];
-const TANK_POS = { x: 150 + 49*1.5, y: 150 - 1*1.5 };
-
-// Position diagram slots
-POSITIONS.forEach((p, i) => {
-  const el = document.getElementById(`ds${i+1}`);
-  el.style.left = p.x + 'px';
-  el.style.top  = p.y + 'px';
+const MAP = Object.fromEntries(SHAPES.map(s=>[s.name,s]));
+const R = 95; // radius in px within 260px circle
+const cx = 130, cy = 130;
+const WOW_POS = [{x:50,y:-47},{x:-19,y:-59},{x:-62,y:0},{x:-19,y:59},{x:47,y:50}];
+const scale = R / 65;
+WOW_POS.forEach((p,i)=>{
+  const el = document.getElementById("ds"+(i+1));
+  el.style.left = (cx + p.x*scale)+"px";
+  el.style.top  = (cy - p.y*scale)+"px";
 });
-const tankEl = document.getElementById('tank');
-tankEl.style.left = TANK_POS.x + 'px';
-tankEl.style.top  = TANK_POS.y + 'px';
+const tankEl = document.getElementById("tank");
+tankEl.style.left = (cx + 49*scale)+"px";
+tankEl.style.top  = (cy - 1*scale)+"px";
 
-// Build shape buttons
-const btnContainer = document.getElementById('buttons');
 let ws;
-
-SHAPES.forEach(s => {
-  const btn = document.createElement('button');
-  btn.className = 'sbtn';
-  btn.id = 'btn_' + s.name;
-  btn.style.setProperty('--c', s.color);
-  btn.innerHTML = `<img src="${s.img}" alt="${s.name}"><span>${s.name}</span>`;
-  btn.addEventListener('click', () => {
-    if (ws && ws.readyState === WebSocket.OPEN)
-      ws.send(JSON.stringify({ type: 'add', shape: s.name }));
-  });
-  btnContainer.appendChild(btn);
+const btnWrap = document.getElementById("buttons");
+SHAPES.forEach(s=>{
+  const b = document.createElement("button");
+  b.className="sbtn"; b.id="btn_"+s.name;
+  b.style.setProperty("--c",s.color);
+  b.innerHTML=`<img src="${s.img}" alt="${s.name}"><span>${s.name}</span>`;
+  b.addEventListener("click",()=>{ if(ws&&ws.readyState===1) ws.send(JSON.stringify({type:"add",shape:s.name})); });
+  btnWrap.appendChild(b);
 });
+const rb = document.createElement("button");
+rb.id="resetBtn"; rb.textContent="Reset";
+rb.addEventListener("click",()=>{ if(ws&&ws.readyState===1) ws.send(JSON.stringify({type:"reset"})); });
+btnWrap.appendChild(rb);
 
-const resetBtn = document.createElement('button');
-resetBtn.id = 'resetBtn';
-resetBtn.textContent = 'Reset';
-resetBtn.addEventListener('click', () => {
-  if (ws && ws.readyState === WebSocket.OPEN)
-    ws.send(JSON.stringify({ type: 'reset' }));
-});
-btnContainer.appendChild(resetBtn);
+const ss = [1,2,3,4,5].map(i=>document.getElementById("ss"+i));
+const ds = [1,2,3,4,5].map(i=>document.getElementById("ds"+i));
+const st = document.getElementById("status");
 
-// Render
-const stripSlots = [1,2,3,4,5].map(i => document.getElementById(`ss${i}`));
-const diagSlots  = [1,2,3,4,5].map(i => document.getElementById(`ds${i}`));
-const status     = document.getElementById('status');
-
-function render(sequence) {
-  // Update button states
-  SHAPES.forEach(s => {
-    document.getElementById('btn_' + s.name).disabled = sequence.includes(s.name);
-  });
-
-  [stripSlots, diagSlots].forEach(slotGroup => {
-    slotGroup.forEach((el, i) => {
-      const name = sequence[i];
-      const info = name && SHAPE_MAP[name];
-      if (info) {
-        el.style.setProperty('--c', info.color);
-        el.querySelector('img').src = info.img;
-        el.querySelector('img').alt = name;
-        const lbl = el.querySelector('.slbl');
-        if (lbl) lbl.textContent = name;
-        el.classList.add('filled');
+function render(seq){
+  SHAPES.forEach(s=>{ document.getElementById("btn_"+s.name).disabled=seq.includes(s.name); });
+  [ss,ds].forEach(grp=>{
+    grp.forEach((el,i)=>{
+      const info = MAP[seq[i]];
+      if(info){
+        el.style.setProperty("--c",info.color);
+        el.querySelector("img").src=info.img;
+        const lb=el.querySelector(".slbl"); if(lb) lb.textContent=seq[i];
+        el.classList.add("filled");
       } else {
-        el.style.removeProperty('--c');
-        el.querySelector('img').src = '';
-        const lbl = el.querySelector('.slbl');
-        if (lbl) lbl.textContent = '';
-        el.classList.remove('filled');
+        el.style.removeProperty("--c");
+        el.querySelector("img").src="";
+        const lb=el.querySelector(".slbl"); if(lb) lb.textContent="";
+        el.classList.remove("filled");
       }
     });
   });
 }
-
-function connect() {
-  ws = new WebSocket('ws://localhost:8765');
-  ws.onopen    = () => { status.textContent = 'Connected'; status.className = 'connected'; };
-  ws.onmessage = e => {
-    const msg = JSON.parse(e.data);
-    if (msg.type === 'reset')  render([]);
-    if (msg.type === 'update') render(msg.sequence);
-  };
-  ws.onclose = () => {
-    status.textContent = 'Disconnected – retrying…';
-    status.className = 'error';
-    setTimeout(connect, 2000);
-  };
-  ws.onerror = () => ws.close();
+function connect(){
+  ws=new WebSocket("ws://localhost:8765");
+  ws.onopen=()=>{ st.textContent="Connected"; st.className="connected"; };
+  ws.onmessage=e=>{ const m=JSON.parse(e.data); if(m.type==="reset") render([]); if(m.type==="update") render(m.sequence); };
+  ws.onclose=()=>{ st.textContent="Disconnected - retrying..."; st.className="error"; setTimeout(connect,2000); };
+  ws.onerror=()=>ws.close();
 }
-
-connect();
-</script>
-</body>
-</html>
-
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    background: #0a0a12;
-    color: #ddd;
-    font-family: 'Segoe UI', sans-serif;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    gap: 32px;
-  }
-
-  h1 {
-    font-size: 1.4rem;
-    letter-spacing: 0.12em;
-    color: #aab8ff;
-    text-transform: uppercase;
-  }
-
-  /* ── Slot strip ── */
-  #slots {
-    display: flex;
-    gap: 12px;
-  }
-
-  .slot {
-    width: 90px;
-    height: 90px;
-    border-radius: 8px;
-    border: 2px solid #333;
-    background: #12121e;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    transition: border-color 0.25s, background 0.25s, box-shadow 0.25s;
-    position: relative;
-  }
-
-  .slot .num {
-    position: absolute;
-    top: 5px;
-    left: 8px;
-    font-size: 0.7rem;
-    color: #555;
-  }
-
-  .slot img {
-    width: 48px;
-    height: 48px;
-    opacity: 0;
-    transition: opacity 0.3s;
-  }
-
-  .slot .label {
-    font-size: 0.72rem;
-    letter-spacing: 0.05em;
-    color: #888;
-    text-transform: uppercase;
-    opacity: 0;
-    transition: opacity 0.3s;
-  }
-
-  .slot.filled img,
-  .slot.filled .label { opacity: 1; }
-
-  /* per-shape colours applied via JS */
-  .slot.filled { border-color: var(--c); background: color-mix(in srgb, var(--c) 12%, #12121e); box-shadow: 0 0 18px color-mix(in srgb, var(--c) 30%, transparent); }
-  .slot.filled .label { color: var(--c); }
-
-  /* ── Status pill ── */
-  #status {
-    font-size: 0.8rem;
-    padding: 4px 14px;
-    border-radius: 20px;
-    background: #1a1a2e;
-    border: 1px solid #2a2a4a;
-    color: #666;
-    transition: color 0.3s, border-color 0.3s;
-  }
-  #status.connected { color: #4caf50; border-color: #4caf50; }
-  #status.error     { color: #f44336; border-color: #f44336; }
-</style>
-</head>
-<body>
-
-<h1>Memory Assist</h1>
-
-<div id="slots">
-  <div class="slot" id="slot-1"><span class="num">1</span><img src="" alt=""><span class="label"></span></div>
-  <div class="slot" id="slot-2"><span class="num">2</span><img src="" alt=""><span class="label"></span></div>
-  <div class="slot" id="slot-3"><span class="num">3</span><img src="" alt=""><span class="label"></span></div>
-  <div class="slot" id="slot-4"><span class="num">4</span><img src="" alt=""><span class="label"></span></div>
-  <div class="slot" id="slot-5"><span class="num">5</span><img src="" alt=""><span class="label"></span></div>
-</div>
-
-<div id="status">Connecting…</div>
-
-<script>
-const SHAPE_INFO = {
-  CIRCLE:   { color: '#66ccff', img: '../circle.png'   },
-  X:        { color: '#ff4d4d', img: '../x.png'        },
-  TRIANGLE: { color: '#66ff88', img: '../Triangle.png' },
-  DIAMOND:  { color: '#ffd933', img: '../diamond.png'  },
-  T:        { color: '#cc80ff', img: '../T.png'        },
-};
-
-const slots  = [1,2,3,4,5].map(i => document.getElementById(`slot-${i}`));
-const status = document.getElementById('status');
-
-function render(sequence) {
-  slots.forEach((el, i) => {
-    const name = sequence[i];
-    if (name && SHAPE_INFO[name]) {
-      const info = SHAPE_INFO[name];
-      el.style.setProperty('--c', info.color);
-      el.querySelector('img').src = info.img;
-      el.querySelector('img').alt = name;
-      el.querySelector('.label').textContent = name;
-      el.classList.add('filled');
-    } else {
-      el.style.removeProperty('--c');
-      el.querySelector('img').src = '';
-      el.querySelector('img').alt = '';
-      el.querySelector('.label').textContent = '';
-      el.classList.remove('filled');
-    }
-  });
-}
-
-function connect() {
-  const ws = new WebSocket('ws://localhost:8765');
-
-  ws.onopen = () => {
-    status.textContent = 'Connected';
-    status.className   = 'connected';
-  };
-
-  ws.onmessage = e => {
-    const msg = JSON.parse(e.data);
-    if (msg.type === 'reset')  render([]);
-    if (msg.type === 'update') render(msg.sequence);
-  };
-
-  ws.onclose = () => {
-    status.textContent = 'Disconnected – retrying…';
-    status.className   = 'error';
-    setTimeout(connect, 2000);
-  };
-
-  ws.onerror = () => ws.close();
-}
-
 connect();
 </script>
 </body>

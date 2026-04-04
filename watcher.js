@@ -8,7 +8,11 @@
  */
 
 const http      = require('http');
+const fs        = require('fs');
+const path      = require('path');
 const WebSocket = require('ws');
+
+const MIME = { '.html':'text/html', '.png':'image/png', '.jpg':'image/jpeg', '.js':'text/javascript', '.css':'text/css' };
 
 const PORT   = 8765;
 const SHAPES = new Set(['TRIANGLE', 'DIAMOND', 'T', 'CIRCLE', 'X']);
@@ -22,7 +26,21 @@ function broadcast(msg) {
         if (ws.readyState === WebSocket.OPEN) ws.send(txt);
 }
 
-const server = http.createServer();
+const server = http.createServer((req, res) => {
+    // Serve index.html at / and static assets (textures) from parent folder
+    let filePath = req.url === '/' ? path.join(__dirname, 'index.html')
+                                   : path.join(__dirname, req.url);
+    // Allow texture files from parent addon folder (../circle.png etc.)
+    if (req.url.startsWith('/..')) {
+        filePath = path.resolve(__dirname, '..', req.url.replace(/^\/\.\.\//, ''));
+    }
+    fs.readFile(filePath, (err, data) => {
+        if (err) { res.writeHead(404); res.end(); return; }
+        const ext = path.extname(filePath);
+        res.writeHead(200, { 'Content-Type': MIME[ext] || 'application/octet-stream' });
+        res.end(data);
+    });
+});
 const wss    = new WebSocket.Server({ server });
 
 wss.on('connection', ws => {
@@ -63,7 +81,8 @@ setInterval(() => {
     }
 }, 20000);
 
-server.listen(PORT, '127.0.0.1', () => {
-    console.log(`MemoryAssist server running on ws://localhost:${PORT}`);
-    console.log('Open web/index.html in your browser.');
+server.listen(PORT, '0.0.0.0', () => {
+    console.log(`MemoryAssist server  →  http://localhost:${PORT}`);
+    console.log(`Local network        →  http://<your-ip>:${PORT}`);
+    console.log(`WebSocket            →  ws://localhost:${PORT}`);
 });
