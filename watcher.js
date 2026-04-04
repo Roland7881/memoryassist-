@@ -1,11 +1,3 @@
-/**
- * MemoryAssist - SSE + HTTP POST server
- *
- * Clients receive updates via Server-Sent Events (GET /events).
- * The overlay sends shape presses via HTTP POST (/add, /reset).
- *
- * Usage:  node watcher.js
- */
 
 const http = require('http');
 const fs   = require('fs');
