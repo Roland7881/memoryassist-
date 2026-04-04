@@ -106,8 +106,8 @@ tankEl.style.left = (cx + 49*scale)+"px";
 tankEl.style.top  = (cy - 1*scale)+"px";
 
 const WS_URL = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
-  ? 'ws://localhost:8765'
-  : 'wss://memoryassist.onrender.com';
+  ? 'ws://localhost:8765/ws'
+  : 'wss://memoryassist.onrender.com/ws';
 
 let ws;
 const ss = [1,2,3,4,5].map(i=>document.getElementById("ss"+i));
