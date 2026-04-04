@@ -14,7 +14,7 @@ const WebSocket = require('ws');
 
 const MIME = { '.html':'text/html', '.png':'image/png', '.jpg':'image/jpeg', '.js':'text/javascript', '.css':'text/css' };
 
-const PORT   = 8765;
+const PORT   = process.env.PORT || 8765;
 const SHAPES = new Set(['TRIANGLE', 'DIAMOND', 'T', 'CIRCLE', 'X']);
 
 let sequence = [];
