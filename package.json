@@ -1,7 +1,6 @@
 {
   "name": "memoryassist-watcher",
   "version": "1.0.0",
-  "description": "WoW chat log watcher + WebSocket bridge for MemoryAssist",
   "main": "watcher.js",
   "scripts": {
     "start": "node watcher.js"
