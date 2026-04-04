@@ -1,66 +1,69 @@
 /**
- * MemoryAssist - WebSocket server
+ * MemoryAssist - SSE + HTTP POST server
  *
- * Receives button clicks from index.html and broadcasts the
- * current sequence to all connected clients.
+ * Clients receive updates via Server-Sent Events (GET /events).
+ * The overlay sends shape presses via HTTP POST (/add, /reset).
  *
  * Usage:  node watcher.js
  */
 
-const http      = require('http');
-const fs        = require('fs');
-const path      = require('path');
-const WebSocket = require('ws');
+const http = require('http');
+const fs   = require('fs');
+const path = require('path');
 
-const MIME = { '.html':'text/html', '.png':'image/png', '.jpg':'image/jpeg', '.js':'text/javascript', '.css':'text/css' };
-
+const MIME   = { '.html':'text/html', '.png':'image/png', '.jpg':'image/jpeg', '.js':'text/javascript', '.css':'text/css' };
 const PORT   = process.env.PORT || 8765;
 const SHAPES = new Set(['TRIANGLE', 'DIAMOND', 'T', 'CIRCLE', 'X']);
 
 let sequence = [];
-let clients  = new Set();
+let clients  = [];   // SSE response objects
+
+const CORS = {
+    'Access-Control-Allow-Origin':  '*',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+};
 
 function broadcast(msg) {
-    const txt = JSON.stringify(msg);
-    for (const ws of clients)
-        if (ws.readyState === WebSocket.OPEN) ws.send(txt);
+    const data = `data: ${JSON.stringify(msg)}\n\n`;
+    clients = clients.filter(res => {
+        try { res.write(data); return true; } catch (_) { return false; }
+    });
 }
 
 const server = http.createServer((req, res) => {
-    // Serve index.html at / and static assets (textures) from parent folder
-    let filePath = req.url === '/' ? path.join(__dirname, 'index.html')
-                                   : path.join(__dirname, req.url);
-    // Allow texture files from parent addon folder (../circle.png etc.)
-    if (req.url.startsWith('/..')) {
-        filePath = path.resolve(__dirname, '..', req.url.replace(/^\/\.\.\//, ''));
+    // CORS preflight
+    if (req.method === 'OPTIONS') {
+        res.writeHead(204, CORS); res.end(); return;
     }
-    fs.readFile(filePath, (err, data) => {
-        if (err) { res.writeHead(404); res.end(); return; }
-        const ext = path.extname(filePath);
-        res.writeHead(200, { 'Content-Type': MIME[ext] || 'application/octet-stream' });
-        res.end(data);
-    });
-});
-const wss    = new WebSocket.Server({ server, path: '/ws' });
 
-wss.on('connection', ws => {
-    clients.add(ws);
-    ws.send(JSON.stringify({ type: 'update', sequence: [...sequence] }));
-    ws.isAlive = true;
-    ws.on('pong',  () => { ws.isAlive = true; });
-    ws.on('close', () => clients.delete(ws));
-    ws.on('error', () => clients.delete(ws));
+    // SSE stream — clients subscribe here
+    if (req.method === 'GET' && req.url === '/events') {
+        res.writeHead(200, {
+            ...CORS,
+            'Content-Type':      'text/event-stream',
+            'Cache-Control':     'no-cache',
+            'Connection':        'keep-alive',
+            'X-Accel-Buffering': 'no',   // disable nginx buffering on Render
+        });
+        res.flushHeaders();
+        // Send current state immediately on connect
+        res.write(`data: ${JSON.stringify({ type: 'update', sequence: [...sequence] })}\n\n`);
+        clients.push(res);
+        req.on('close', () => { clients = clients.filter(c => c !== res); });
+        return;
+    }
 
-    ws.on('message', data => {
-        try {
-            const msg = JSON.parse(data);
-            if (msg.type === 'reset') {
-                sequence = [];
-                broadcast({ type: 'reset' });
-                console.log('[reset]');
-            } else if (msg.type === 'add') {
-                const shape = (msg.shape || '').toUpperCase();
-                if (!SHAPES.has(shape) || sequence.includes(shape) || sequence.length >= 5) return;
+    // POST /add — overlay sends a shape press
+    if (req.method === 'POST' && req.url === '/add') {
+        let body = '';
+        req.on('data', d => body += d);
+        req.on('end', () => {
+            try {
+                const shape = ((JSON.parse(body).shape) || '').toUpperCase();
+                if (!SHAPES.has(shape) || sequence.includes(shape) || sequence.length >= 5) {
+                    res.writeHead(200, CORS); res.end(); return;
+                }
                 sequence.push(shape);
                 if (sequence.length === 4) {
                     const last = [...SHAPES].find(s => !sequence.includes(s));
@@ -68,21 +71,31 @@ wss.on('connection', ws => {
                 }
                 broadcast({ type: 'update', sequence: [...sequence] });
                 console.log(`[add] ${shape}  =>  [${sequence.join(', ')}]`);
-            }
-        } catch (_) {}
+            } catch (_) {}
+            res.writeHead(200, CORS); res.end();
+        });
+        return;
+    }
+
+    // POST /reset — overlay resets the sequence
+    if (req.method === 'POST' && req.url === '/reset') {
+        sequence = [];
+        broadcast({ type: 'reset' });
+        console.log('[reset]');
+        res.writeHead(200, CORS); res.end(); return;
+    }
+
+    // Static files
+    const filePath = req.url === '/' ? path.join(__dirname, 'index.html')
+                                     : path.join(__dirname, req.url);
+    fs.readFile(filePath, (err, data) => {
+        if (err) { res.writeHead(404, CORS); res.end(); return; }
+        const ext = path.extname(filePath);
+        res.writeHead(200, { ...CORS, 'Content-Type': MIME[ext] || 'application/octet-stream' });
+        res.end(data);
     });
 });
 
-setInterval(() => {
-    for (const ws of clients) {
-        if (!ws.isAlive) { ws.terminate(); clients.delete(ws); continue; }
-        ws.isAlive = false;
-        ws.ping();
-    }
-}, 20000);
-
 server.listen(PORT, '0.0.0.0', () => {
     console.log(`MemoryAssist server  →  http://localhost:${PORT}`);
-    console.log(`Local network        →  http://<your-ip>:${PORT}`);
-    console.log(`WebSocket            →  ws://localhost:${PORT}`);
 });

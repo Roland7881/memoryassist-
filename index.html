@@ -105,11 +105,11 @@ const tankEl = document.getElementById("tank");
 tankEl.style.left = (cx + 49*scale)+"px";
 tankEl.style.top  = (cy - 1*scale)+"px";
 
-const WS_URL = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
-  ? 'ws://localhost:8765/ws'
-  : 'wss://memoryassist.onrender.com/ws';
+const BASE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+  ? 'http://localhost:8765'
+  : 'https://memoryassist.onrender.com';
 
-let ws;
+let es;
 const ss = [1,2,3,4,5].map(i=>document.getElementById("ss"+i));
 const ds = [1,2,3,4,5].map(i=>document.getElementById("ds"+i));
 const st = document.getElementById("status");
@@ -134,11 +134,10 @@ function render(seq){
   });
 }
 function connect(){
-  ws=new WebSocket(WS_URL);
-  ws.onopen=()=>{ st.textContent="Connected"; st.className="connected"; };
-  ws.onmessage=e=>{ const m=JSON.parse(e.data); if(m.type==="reset") render([]); if(m.type==="update") render(m.sequence); };
-  ws.onclose=()=>{ st.textContent="Disconnected - retrying..."; st.className="error"; setTimeout(connect,2000); };
-  ws.onerror=()=>ws.close();
+  es=new EventSource(BASE+'/events');
+  es.onopen=()=>{ st.textContent="Connected"; st.className="connected"; };
+  es.onmessage=e=>{ const m=JSON.parse(e.data); if(m.type==="reset") render([]); if(m.type==="update") render(m.sequence); };
+  es.onerror=()=>{ st.textContent="Disconnected - retrying..."; st.className="error"; };
 }
 connect();
 </script>
