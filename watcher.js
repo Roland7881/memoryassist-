@@ -41,13 +41,7 @@ const server = http.createServer((req, res) => {
         res.end(data);
     });
 });
-const wss    = new WebSocket.Server({ noServer: true });
-
-server.on('upgrade', (req, socket, head) => {
-    wss.handleUpgrade(req, socket, head, ws => {
-        wss.emit('connection', ws, req);
-    });
-});
+const wss    = new WebSocket.Server({ server, path: '/ws' });
 
 wss.on('connection', ws => {
     clients.add(ws);
