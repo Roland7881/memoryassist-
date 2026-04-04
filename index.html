@@ -55,24 +55,6 @@
   .dslot.filled { border-color: var(--c); background: color-mix(in srgb,var(--c) 14%,#12121e); box-shadow: 0 0 10px color-mix(in srgb,var(--c) 30%,transparent); }
   .dslot.filled img { opacity: 1; }
 
-  #buttons { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
-  .sbtn {
-    width: 64px; height: 64px; border-radius: 8px; cursor: pointer;
-    border: 2px solid var(--c); background: color-mix(in srgb,var(--c) 10%,#0e0e1a);
-    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
-    transition: background .15s, box-shadow .15s, opacity .15s;
-  }
-  .sbtn:hover:not(:disabled) { background: color-mix(in srgb,var(--c) 24%,#0e0e1a); box-shadow: 0 0 12px color-mix(in srgb,var(--c) 40%,transparent); }
-  .sbtn:disabled { opacity: .28; cursor: default; }
-  .sbtn img  { width: 32px; height: 32px; pointer-events: none; }
-  .sbtn span { font-size: .58rem; text-transform: uppercase; letter-spacing: .04em; color: var(--c); pointer-events: none; }
-  #resetBtn {
-    height: 64px; padding: 0 18px; border-radius: 8px;
-    border: 2px solid #554; background: #1a0f0f; color: #ff7070;
-    font-size: .8rem; letter-spacing: .06em; text-transform: uppercase; cursor: pointer;
-    transition: background .15s, border-color .15s;
-  }
-  #resetBtn:hover { background: #2a1212; border-color: #f44; }
   #status {
     font-size: .72rem; padding: 3px 12px; border-radius: 20px;
     background: #111120; border: 1px solid #222236; color: #555;
@@ -100,7 +82,6 @@
   <div class="dslot" id="ds4"><span class="dnum">4</span><img src="" alt=""></div>
   <div class="dslot" id="ds5"><span class="dnum">5</span><img src="" alt=""></div>
 </div>
-<div id="buttons"></div>
 <div id="status">Connecting...</div>
 <script>
 const SHAPES = [
@@ -125,26 +106,12 @@ tankEl.style.left = (cx + 49*scale)+"px";
 tankEl.style.top  = (cy - 1*scale)+"px";
 
 let ws;
-const btnWrap = document.getElementById("buttons");
-SHAPES.forEach(s=>{
-  const b = document.createElement("button");
-  b.className="sbtn"; b.id="btn_"+s.name;
-  b.style.setProperty("--c",s.color);
-  b.innerHTML=`<img src="${s.img}" alt="${s.name}"><span>${s.name}</span>`;
-  b.addEventListener("click",()=>{ if(ws&&ws.readyState===1) ws.send(JSON.stringify({type:"add",shape:s.name})); });
-  btnWrap.appendChild(b);
-});
-const rb = document.createElement("button");
-rb.id="resetBtn"; rb.textContent="Reset";
-rb.addEventListener("click",()=>{ if(ws&&ws.readyState===1) ws.send(JSON.stringify({type:"reset"})); });
-btnWrap.appendChild(rb);
-
 const ss = [1,2,3,4,5].map(i=>document.getElementById("ss"+i));
 const ds = [1,2,3,4,5].map(i=>document.getElementById("ds"+i));
 const st = document.getElementById("status");
 
 function render(seq){
-  SHAPES.forEach(s=>{ document.getElementById("btn_"+s.name).disabled=seq.includes(s.name); });
+
   [ss,ds].forEach(grp=>{
     grp.forEach((el,i)=>{
       const info = MAP[seq[i]];
