@@ -1,11 +1,29 @@
 {
-  "name": "memoryassist-watcher",
+  "name": "memoryassist-overlay",
   "version": "1.0.0",
-  "main": "watcher.js",
+  "description": "Always-on-top overlay for Memory Assist",
+  "main": "main.js",
   "scripts": {
-    "start": "node watcher.js"
+    "start": "electron .",
+    "dist": "electron-builder --win portable"
   },
-  "engines": { "node": ">=18" },
-  "dependencies": {
+  "build": {
+    "appId": "com.memoryassist.overlay",
+    "productName": "MemoryAssist Overlay",
+    "files": [
+      "main.js",
+      "overlay.html",
+      "*.png",
+      "icon.ico"
+    ],
+    "win": {
+      "target": "portable",
+      "icon": "icon.ico"
+    }
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "electron": "^41.1.1",
+    "electron-builder": "^25.1.8"
   }
 }
