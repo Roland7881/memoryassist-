@@ -97,7 +97,7 @@ const SHAPES = [
 const MAP = Object.fromEntries(SHAPES.map(s=>[s.name,s]));
 const R = 95; // radius in px within 260px circle
 const cx = 130, cy = 130;
-const WOW_POS = [{x:50,y:-47},{x:-19,y:-59},{x:-62,y:0},{x:-19,y:59},{x:47,y:50}];
+const WOW_POS = [{x:-32,y:-55},{x:-56,y:-20},{x:0,y:62},{x:56,y:-20},{x:32,y:-55}];
 const scale = R / 65;
 WOW_POS.forEach((p,i)=>{
   const el = document.getElementById("ds"+(i+1));
@@ -105,8 +105,8 @@ WOW_POS.forEach((p,i)=>{
   el.style.top  = (cy - p.y*scale)+"px";
 });
 const tankEl = document.getElementById("tank");
-tankEl.style.left = (cx + 49*scale)+"px";
-tankEl.style.top  = (cy - 1*scale)+"px";
+tankEl.style.left = cx+"px";
+tankEl.style.top  = (cy + 45*scale)+"px";
 
 const BASE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
   ? 'http://localhost:8765'
