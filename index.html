@@ -47,15 +47,22 @@
   #tank span { font-size: .52rem; color: #80b8ff; }
   .dslot {
     position: absolute; width: 46px; height: 46px;
-    transform: translate(-50%,-50%); border-radius: 5px;
+    transform: translate(-50%,-50%); border-radius: 7px;
     border: 2px solid #2a2a3a; background: #12121e;
-    display: flex; align-items: center; justify-content: center;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px;
     transition: border-color .25s, background .25s, box-shadow .25s;
   }
-  .dslot .dnum { position: absolute; top: 2px; left: 4px; font-size: .58rem; color: #555; }
-  .dslot img   { width: 28px; height: 28px; opacity: 0; transition: opacity .3s; }
-  .dslot.filled { border-color: var(--c); background: color-mix(in srgb,var(--c) 14%,#12121e); box-shadow: 0 0 10px color-mix(in srgb,var(--c) 30%,transparent); }
-  .dslot.filled img { opacity: 1; }
+  .dslot .dnum {
+    font-size: 1rem; font-weight: 800; color: #2e2e50;
+    line-height: 1; transition: color .2s, font-size .2s; letter-spacing: -.02em;
+  }
+  .dslot img   { display: block; width: 0; height: 0; opacity: 0; transition: width .2s, height .2s, opacity .25s; }
+  .dslot .dlbl { font-size: .42rem; text-transform: uppercase; color: #555; opacity: 0; transition: opacity .25s; letter-spacing: .04em; }
+  .dslot.filled { border-color: var(--c); background: color-mix(in srgb,var(--c) 15%,#12121e); box-shadow: 0 0 10px color-mix(in srgb,var(--c) 35%,transparent); }
+  .dslot.filled .dnum { color: var(--c); font-size: 1.2rem; }
+  .dslot.filled img { width: 24px; height: 24px; opacity: 1; }
+  .dslot.filled .dlbl { opacity: 1; color: var(--c); }
 
   #status {
     font-size: .72rem; padding: 3px 12px; border-radius: 20px;
@@ -79,11 +86,11 @@
 <div id="diag">
   <div id="boss"></div>
   <div id="tank"><img src="https://wow.zamimg.com/images/wow/icons/small/inv_shield_06.jpg" alt="" onerror="this.style.display='none'"><span>Tank</span></div>
-  <div class="dslot" id="ds1"><span class="dnum">1</span><img src="" alt=""></div>
-  <div class="dslot" id="ds2"><span class="dnum">2</span><img src="" alt=""></div>
-  <div class="dslot" id="ds3"><span class="dnum">3</span><img src="" alt=""></div>
-  <div class="dslot" id="ds4"><span class="dnum">4</span><img src="" alt=""></div>
-  <div class="dslot" id="ds5"><span class="dnum">5</span><img src="" alt=""></div>
+  <div class="dslot" id="ds1"><span class="dnum">1</span><img src="" alt=""><span class="dlbl"></span></div>
+  <div class="dslot" id="ds2"><span class="dnum">2</span><img src="" alt=""><span class="dlbl"></span></div>
+  <div class="dslot" id="ds3"><span class="dnum">3</span><img src="" alt=""><span class="dlbl"></span></div>
+  <div class="dslot" id="ds4"><span class="dnum">4</span><img src="" alt=""><span class="dlbl"></span></div>
+  <div class="dslot" id="ds5"><span class="dnum">5</span><img src="" alt=""><span class="dlbl"></span></div>
 </div>
 <div id="status">Connecting...</div>
 <script>
@@ -95,19 +102,33 @@ const SHAPES = [
   { name:"X",        color:"#ff4d4d", img:"./x.png"        },
 ];
 const MAP = Object.fromEntries(SHAPES.map(s=>[s.name,s]));
-const R = 95; // radius in px within 260px circle
-const cx = 130, cy = 130;
-const WOW_POS = [{x:-32,y:-55},{x:-56,y:-20},{x:0,y:62},{x:56,y:-20},{x:32,y:-55}];
-const scale = R / 65;
-WOW_POS.forEach((p,i)=>{
-  const el = document.getElementById("ds"+(i+1));
-  el.style.left = (cx + p.x*scale)+"px";
-  el.style.top  = (cy - p.y*scale)+"px";
+const DIAG_SIZE = 260;
+const SLOT_R    = 101;
+const TANK_R    = 112;
+const SLOT_ANGLES = [150, 210, 270, 330, 30];
+const dc = DIAG_SIZE / 2;
+function polarXY(r, deg) {
+  const rad = deg * Math.PI / 180;
+  return { left: dc + r * Math.cos(rad), top: dc + r * Math.sin(rad) };
+}
+const ds = [1,2,3,4,5].map(i => document.getElementById("ds"+(i+1)));
+SLOT_ANGLES.forEach((deg, i) => {
+  const p = polarXY(SLOT_R, deg);
+  ds[i].style.left = p.left.toFixed(1)+"px";
+  ds[i].style.top  = p.top.toFixed(1)+"px";
 });
 const tankEl = document.getElementById("tank");
-tankEl.style.left = cx+"px";
-tankEl.style.top  = (cy + 45*scale)+"px";
+const tp = polarXY(TANK_R, 90);
+tankEl.style.left = tp.left.toFixed(1)+"px";
+tankEl.style.top  = tp.top.toFixed(1)+"px";
 
+// ─────────────────────────────────────────────────────────────────────────────
+// SERVER URL — change the production URL below if you are hosting your own
+// instance of watcher.js instead of using the shared server.
+// Deploy watcher.js to any Node host (Render, Railway, Fly.io, VPS…) and
+// replace 'https://memoryassist.onrender.com' with your own URL.
+// The localhost entry is used automatically when testing locally.
+// ─────────────────────────────────────────────────────────────────────────────
 const BASE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
   ? 'http://localhost:8765'
   : 'https://memoryassist.onrender.com';
@@ -117,26 +138,36 @@ document.getElementById('room-name').textContent = roomId;
 
 let es;
 const ss = [1,2,3,4,5].map(i=>document.getElementById("ss"+i));
-const ds = [1,2,3,4,5].map(i=>document.getElementById("ds"+i));
 const st = document.getElementById("status");
 
 function render(seq){
-
-  [ss,ds].forEach(grp=>{
-    grp.forEach((el,i)=>{
-      const info = MAP[seq[i]];
-      if(info){
-        el.style.setProperty("--c",info.color);
-        el.querySelector("img").src=info.img;
-        const lb=el.querySelector(".slbl"); if(lb) lb.textContent=seq[i];
-        el.classList.add("filled");
-      } else {
-        el.style.removeProperty("--c");
-        el.querySelector("img").src="";
-        const lb=el.querySelector(".slbl"); if(lb) lb.textContent="";
-        el.classList.remove("filled");
-      }
-    });
+  ss.forEach((el,i)=>{
+    const info = MAP[seq[i]];
+    if(info){
+      el.style.setProperty("--c",info.color);
+      el.querySelector("img").src=info.img;
+      const lb=el.querySelector(".slbl"); if(lb) lb.textContent=seq[i];
+      el.classList.add("filled");
+    } else {
+      el.style.removeProperty("--c");
+      el.querySelector("img").src="";
+      const lb=el.querySelector(".slbl"); if(lb) lb.textContent="";
+      el.classList.remove("filled");
+    }
+  });
+  ds.forEach((el,i)=>{
+    const info = MAP[seq[i]];
+    if(info){
+      el.style.setProperty("--c",info.color);
+      el.querySelector("img").src=info.img;
+      el.querySelector(".dlbl").textContent=info.name;
+      el.classList.add("filled");
+    } else {
+      el.style.removeProperty("--c");
+      el.querySelector("img").src="";
+      el.querySelector(".dlbl").textContent="";
+      el.classList.remove("filled");
+    }
   });
 }
 function connect(){
