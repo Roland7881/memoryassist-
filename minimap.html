@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-app-region: no-drag; }
+  html, body { width: 260px; height: 262px; background: transparent; overflow: hidden; }
+
+  #wrapper {
+    position: relative; width: 260px; height: 262px;
+    display: flex; flex-direction: column;
+    font-family: "Segoe UI", sans-serif;
+    transition: opacity .5s;
+  }
+  /* Dim (but not fully invisible) when no data so the user can still
+     see the outline to position it. Snaps to full opacity once data arrives. */
+  #wrapper.empty { opacity: 0.12; }
+
+  /* ── drag bar ───────────────────────────────────────────────────── */
+  #mini-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    height: 22px; flex-shrink: 0; padding: 0 7px;
+    background: rgba(8, 8, 16, 0.88);
+    border: 1px solid rgba(100, 80, 160, 0.55);
+    border-bottom: none;
+    border-radius: 10px 10px 0 0;
+    cursor: grab; user-select: none;
+  }
+  #mini-bar-title { font-size: .55rem; letter-spacing: .1em; color: #8890cc; text-transform: uppercase; }
+  .btn-row { display: flex; align-items: center; gap: 4px; }
+  .mbar-btn {
+    cursor: pointer; background: none;
+    border: 1px solid #334; border-radius: 3px;
+    padding: 1px 5px; font-size: .56rem; color: #556; line-height: 1.4;
+    font-family: "Segoe UI", sans-serif;
+    transition: color .15s, border-color .15s;
+  }
+  .mbar-btn:hover { color: #aab8ff; border-color: #6655cc; }
+  .mbar-btn.active { border-color: #f44336; color: #f77; }
+
+  /* ── diagram area ───────────────────────────────────────────────── */
+  #diag-area {
+    flex: 1;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(8, 8, 16, 0.82);
+    border: 1px solid rgba(100, 80, 160, 0.55);
+    border-radius: 0 0 10px 10px;
+    backdrop-filter: blur(6px);
+  }
+  #diag-inner {
+    position: relative; width: 200px; height: 200px;
+    border-radius: 50%; border: 2px solid #2a2a4a;
+    background: #0d0d18; box-shadow: 0 0 24px rgba(80,60,140,.35);
+    transform-origin: center center; flex-shrink: 0;
+  }
+  #md-boss {
+    position: absolute; width: 28px; height: 28px;
+    left: 50%; top: 50%; transform: translate(-50%,-50%);
+    border-radius: 50%; background: #c03030;
+    box-shadow: 0 0 14px rgba(200,50,50,.6);
+  }
+  .md-slot {
+    position: absolute; width: 46px; height: 46px;
+    transform: translate(-50%,-50%); border-radius: 7px;
+    border: 2px solid #2a2a3a; background: #12121e;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px;
+    transition: border-color .25s, background .25s, box-shadow .25s;
+  }
+  .md-slot .md-num {
+    font-size: 1rem; font-weight: 800; color: #2e2e50;
+    line-height: 1; transition: color .2s, font-size .2s; letter-spacing: -.02em;
+  }
+  .md-slot img { display: block; width: 0; height: 0; opacity: 0; transition: width .2s, height .2s, opacity .25s; }
+  .md-slot .md-lbl { font-size: .42rem; text-transform: uppercase; color: #555; opacity: 0; transition: opacity .25s; letter-spacing: .04em; }
+  .md-slot.filled { border-color: var(--c); background: color-mix(in srgb,var(--c) 15%,#12121e); box-shadow: 0 0 10px color-mix(in srgb,var(--c) 35%,transparent); }
+  .md-slot.filled .md-num { color: var(--c); font-size: 1.2rem; }
+  .md-slot.filled img { width: 24px; height: 24px; opacity: 1; }
+  .md-slot.filled .md-lbl { opacity: 1; color: var(--c); }
+
+  #md-tank {
+    position: absolute; transform: translate(-50%,-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+  }
+  #md-tank img { width: 24px; height: 24px; border-radius: 4px; }
+  #md-tank span { font-size: .5rem; color: #80b8ff; letter-spacing: .04em; font-family: "Segoe UI", sans-serif; }
+</style>
+</head>
+<body>
+<div id="wrapper" class="empty">
+  <div id="mini-bar">
+    <span id="mini-bar-title">&#9670; Minimap</span>
+    <div class="btn-row">
+      <button id="ctBtn" class="mbar-btn" title="Enable Click-Through (lock position)">CT</button>
+    </div>
+  </div>
+  <div id="diag-area">
+    <div id="diag-inner">
+      <div id="md-boss"></div>
+      <div id="md-tank">
+        <img src="https://wow.zamimg.com/images/wow/icons/small/inv_shield_06.jpg" alt="" onerror="this.style.display='none'">
+        <span>Tank</span>
+      </div>
+      <div class="md-slot" id="md1"><span class="md-num">1</span><img src="" alt=""><span class="md-lbl"></span></div>
+      <div class="md-slot" id="md2"><span class="md-num">2</span><img src="" alt=""><span class="md-lbl"></span></div>
+      <div class="md-slot" id="md3"><span class="md-num">3</span><img src="" alt=""><span class="md-lbl"></span></div>
+      <div class="md-slot" id="md4"><span class="md-num">4</span><img src="" alt=""><span class="md-lbl"></span></div>
+      <div class="md-slot" id="md5"><span class="md-num">5</span><img src="" alt=""><span class="md-lbl"></span></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const api = window.electronAPI || null;
+
+// Room / name come from URL query params injected by main.js
+const params = new URLSearchParams(window.location.search);
+const room = params.get('room') || 'default';
+const name = params.get('name') || 'Anonymous';
+
+const RAW_BASE = 'https://memoryassist.onrender.com';
+
+const SHAPES = [
+  { name: 'TRIANGLE', color: '#66ff88', img: 'Triangle.png' },
+  { name: 'DIAMOND',  color: '#ffd933', img: 'diamond.png'  },
+  { name: 'T',        color: '#cc80ff', img: 'T.png'        },
+  { name: 'CIRCLE',   color: '#66ccff', img: 'circle.png'   },
+  { name: 'X',        color: '#ff4d4d', img: 'x.png'        },
+];
+const MAP = Object.fromEntries(SHAPES.map(s => [s.name, s]));
+
+function imgUrl(file) { return new URL(file, location.href).href; }
+
+// ── diagram layout ───────────────────────────────────────────────────
+const wrapper   = document.getElementById('wrapper');
+const mdSlots   = [1,2,3,4,5].map(i => document.getElementById('md' + i));
+const mdTankEl  = document.getElementById('md-tank');
+const DIAG_SIZE = 200;
+const SLOT_R    = 78;
+const dc = DIAG_SIZE / 2;
+const WOW_POS = [{x:50,y:-47},{x:-19,y:-59},{x:-62,y:0},{x:-19,y:59},{x:47,y:50}];
+const scale = SLOT_R / 65;
+WOW_POS.forEach((p, i) => {
+    mdSlots[i].style.left = (dc + p.x * scale).toFixed(1) + 'px';
+    mdSlots[i].style.top  = (dc - p.y * scale).toFixed(1) + 'px';
+});
+mdTankEl.style.left = (dc + 49 * scale).toFixed(1) + 'px';
+mdTankEl.style.top  = (dc -  1 * scale).toFixed(1) + 'px';
+
+// ── render ───────────────────────────────────────────────────────────
+function render(seq) {
+    mdSlots.forEach((el, i) => {
+        const info = MAP[seq[i]];
+        if (info) {
+            el.style.setProperty('--c', info.color);
+            el.querySelector('img').src = imgUrl(info.img);
+            el.querySelector('.md-lbl').textContent = info.name;
+            el.classList.add('filled');
+        } else {
+            el.style.removeProperty('--c');
+            el.querySelector('img').src = '';
+            el.querySelector('.md-lbl').textContent = '';
+            el.classList.remove('filled');
+        }
+    });
+    // Transparent when no data, fully visible when data exists
+    wrapper.classList.toggle('empty', seq.length === 0);
+}
+
+// ── SSE connection (viewer-only, no leaderKey) ────────────────────────
+let es = null;
+function connect() {
+    if (es) { try { es.close(); } catch (_) {} es = null; }
+    es = new EventSource(
+        `${RAW_BASE}/events?room=${encodeURIComponent(room)}&name=${encodeURIComponent(name)}`
+    );
+    es.onmessage = e => {
+        const m = JSON.parse(e.data);
+        if (m.type === 'reset')  render([]);
+        if (m.type === 'update') render(m.sequence);
+    };
+}
+connect();
+
+// ── click-through toggle ─────────────────────────────────────────────
+let ctLocked = false;
+const ctBtn = document.getElementById('ctBtn');
+
+function updateCT() {
+    ctBtn.classList.toggle('active', ctLocked);
+    ctBtn.title = ctLocked
+        ? 'Click-Through ACTIVE — use leader panel to disable'
+        : 'Enable Click-Through (lock position)';
+    // Notify the main overlay so its button stays in sync
+    api?.notifyCT(ctLocked);
+    if (ctLocked) {
+        // Fully lock — window ignores all mouse input
+        api?.setIgnoreMouse(true);
+    }
+    // When unlocking, mouse-move detection below will restore the correct state
+}
+
+ctBtn.addEventListener('click', () => {
+    ctLocked = !ctLocked;
+    updateCT();
+});
+
+// Accept CT toggle sent from the main overlay via main.js
+api?.onSetCT(locked => {
+    ctLocked = locked;
+    updateCT();
+});
+
+// ── drag ─────────────────────────────────────────────────────────────
+let dragging = false, dragX = 0, dragY = 0;
+const barEl = document.getElementById('mini-bar');
+
+barEl.addEventListener('mousedown', e => {
+    if (e.target.closest('#ctBtn')) return;
+    dragging = true; dragX = e.screenX; dragY = e.screenY;
+});
+document.addEventListener('mouseup',  () => { dragging = false; });
+window.addEventListener('blur',       () => { dragging = false; });
+
+// ── per-pixel click-through (only bar is interactive, diagram passthrough) ──
+let ignoring = true;
+
+document.addEventListener('mousemove', e => {
+    if (dragging) {
+        const dx = e.screenX - dragX, dy = e.screenY - dragY;
+        dragX = e.screenX; dragY = e.screenY;
+        if (dx || dy) api?.move(dx, dy);
+        return;
+    }
+    if (ctLocked) return; // fully click-through, don't flip state
+
+    const el = document.elementFromPoint(e.clientX, e.clientY);
+    const interactive = el && el.closest('#mini-bar');
+    const shouldIgnore = !interactive;
+    if (shouldIgnore !== ignoring) {
+        ignoring = shouldIgnore;
+        api?.setIgnoreMouse(ignoring);
+    }
+});
+
+document.addEventListener('mouseleave', () => {
+    if (dragging || ctLocked) return;
+    if (!ignoring) { ignoring = true; api?.setIgnoreMouse(true); }
+});
+</script>
+</body>
+</html>
