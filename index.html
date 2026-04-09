@@ -111,7 +111,7 @@ function polarXY(r, deg) {
   const rad = deg * Math.PI / 180;
   return { left: dc + r * Math.cos(rad), top: dc + r * Math.sin(rad) };
 }
-const ds = [1,2,3,4,5].map(i => document.getElementById("ds"+(i+1)));
+const ds = [1,2,3,4,5].map(i => document.getElementById("ds"+i));
 SLOT_ANGLES.forEach((deg, i) => {
   const p = polarXY(SLOT_R, deg);
   ds[i].style.left = p.left.toFixed(1)+"px";
